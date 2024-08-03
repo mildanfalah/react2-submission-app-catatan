@@ -1,11 +1,18 @@
 import React from "react";
-import { getNote } from "../utils/local-data";
+import { deleteNote, getNote } from "../utils/local-data";
 import NoteDetail from "../components/NoteDetail";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 function DetailPageWrapper() {
   const { id } = useParams();
-  return <DetailPage id={id} />;
+  const navigate = useNavigate();
+
+  function onDeleteHandler(id) {
+    deleteNote(id);
+    navigate("/");
+  }
+
+  return <DetailPage id={id} onDelete={onDeleteHandler} />;
 }
 
 class DetailPage extends React.Component {
@@ -13,18 +20,25 @@ class DetailPage extends React.Component {
     super(props);
 
     this.state = {
-      notes: getNote(props.id),
+      note: getNote(props.id),
     };
+
+    this.onDeleteHandler = this.onDeleteHandler.bind(this);
+  }
+
+  onDeleteHandler() {
+    const { id, onDelete } = this.props;
+    onDelete(id);
   }
 
   render() {
-    if (this.state.notes === null) {
+    if (this.state.note === null) {
       return <p>Note is not found!</p>;
     }
 
     return (
       <section>
-        <NoteDetail {...this.state.notes} />
+        <NoteDetail onDelete={this.onDeleteHandler} {...this.state.note} />
       </section>
     );
   }
